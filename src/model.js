@@ -1,4 +1,4 @@
-(function (scope, JsModel, jsModelPrototype) {
+(function(scope, JsModel, jsModelPrototype) {
 	var member,
 		prototype = JsModel.prototype;
 	for (member in jsModelPrototype) {
@@ -6,11 +6,10 @@
 	}
 	scope.JsModel = JsModel;
 })(
-	this, 
+	this,
 	function JsModel(value) {
 		this.set(value);
-	},
-	{
+	}, {
 		_$value: undefined,
 		get: function jsModel_get() {
 			return this._$value;
@@ -20,6 +19,9 @@
 		},
 		toJSON: function jsModel_toJSON() {
 			return this.get();
+		},
+		valueOf: function () {
+			return this._$value;
 		}
 	}
 );
