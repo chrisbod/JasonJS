@@ -11,12 +11,15 @@
 		this.set(value);
 	},
 	{
-		_value: undefined,
+		_$value: undefined,
 		get: function jsModel_get() {
 			return this._$value;
 		},
 		set: function jsModel_set(value) {
 			this._$value = value;
+		},
+		toJSON: function jsModel_toJSON() {
+			return this.get();
 		}
 	}
 );
