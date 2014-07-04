@@ -64,7 +64,7 @@ describe("Path object tests", function () {
 		}
 	});
 
-
+/*
 	it("detects primitives correctly", function () {
 		var path = jason();
 		expect(path.isPrimitive({})).toBe(false);
@@ -103,7 +103,7 @@ describe("Path object tests", function () {
 		HackedObject.prototype.constructor = Object;
 		expect(path.isNative(new HackedObject())).toBe(false);
 		
-	})
+	})*/
 
 	//all,key,keys,expression,function,property,parent
 	it("the all method should return all the values in the test data" , function () {
