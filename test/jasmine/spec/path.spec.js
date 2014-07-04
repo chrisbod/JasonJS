@@ -113,7 +113,7 @@ describe("Path object tests", function () {
 		var simples = jason().all().execute(simple);
 		expect(simples+"").toEqual(simple+"")
 		var all = jason().all().execute(obj6);
-		expect(all.length).toEqual(14); //1 obj, 7 properties 1 empty array, 1 array with 4 items
+		expect(all.length).toEqual(21); //1 obj, 7 properties 1 empty array, 1 array with 4 items
 	});
 	it("the key method should return any item with a given key", function () {
 		var keys = jason().key("string").execute(testData);

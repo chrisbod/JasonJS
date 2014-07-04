@@ -87,6 +87,27 @@ JasonPath.prototype = {
             }
         }
     },
+    deepFilter: function (object, eachFunction) {
+        var results = [],
+            result,
+            nextObject,
+            push = results.push;
+        if (this.shouldEnumerate(object)) {
+            if (this.track(object)) {
+                for (property in object) {
+                    if (object.hasOwnProperty(property)) {
+                        nextObject = object[property];
+                        if (eachFunction.call(this, nextObject, property, object)) {
+                            results.push(nextObject);
+                        }
+                        push.apply(results,this.deepFilter(nextObject, eachFunction));
+                    }
+                }
+            }
+            this.untrack();
+        }
+        return results;
+    },
     isIn: function (property,value) {//safer in (doesn't error if we get passed nulls and undefined)
         try {
             return property in value;
@@ -137,20 +158,16 @@ JasonPath.prototype = {
     isCollection: function(value) {
         return "length" in value && typeof value.length == "number"
     },
-    all: function jason_path_all() {
-        this.push(function $jason_path_all(object) {
-            var results = [];
-            this.each(object, function $jason_path_all_filter(value) {    
-                if (!this.isTracking(value)) {
-                    results.push(value);
-                }
-                if (this.shouldEnumerate(value)) {
-                    this.each(value, $jason_path_all_filter, true);
-                }
-            }, true);
-            this.untrack();
-            return results;
-        });
+    all: function () {
+        this.push(
+            function $jason_path_all(object) {
+                return this.deepFilter(object, 
+                    function $jason_path_all_filter() {
+                        return true;
+                    }
+                );
+            }
+        );
         return this;
     },
     key: function jason_path_key(property) {
