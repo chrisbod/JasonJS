@@ -19,9 +19,11 @@ describe("Path object tests", function () {
 	function array(vals) {
 		return [].concat(vals||[]);
 	}
+	var count = 0;
 	function nested(level,bool,str,obj,arr,coll){
 		level = level || -1;
-		return {//6 properties 
+		return {//6 properties
+			id: "ID"+count++,
 			level: level || -1,
 			boolean: bool || true,
 			string: str || "some level "+level+" string",
@@ -47,7 +49,7 @@ describe("Path object tests", function () {
 	]
 	obj1.collection[0].collection[0] = obj6;
 
-	obj6.obj6 = obj6;
+	//obj6.obj6 = obj6;
 	beforeEach(function () {
 		testData = {
 			number: 1,
@@ -105,13 +107,23 @@ describe("Path object tests", function () {
 
 	//all,key,keys,expression,function,property,parent
 	it("the all method should return all the values in the test data" , function () {
+		var simple = jason().all().execute({monkey:"monkey"});
+		expect(simple.length).toBe(1);
+		var simple = [1,2,3,4,5,6]
+		var simples = jason().all().execute(simple);
+		expect(simples+"").toEqual(simple+"")
 		var all = jason().all().execute(obj6);
-			expect(all.length).toEqual(13); //6 properties 1 empty array, 1 array with 4 items
+		expect(all.length).toEqual(14); //1 obj, 7 properties 1 empty array, 1 array with 4 items
 	});
 	it("the key method should return any item with a given key", function () {
-		
+		var keys = jason().key("string").execute(testData);
+		expect(keys.length).toBe(6);
 
 	})
+	it("should get the parent objects of any passed objects", function () {
+		//var all = jason().all().execute(ob6)
+	})
+
 	
 
 	

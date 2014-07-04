@@ -1,42 +1,33 @@
-function jason() { //handle recursion
-    return new jason.Path();
-}
-
-jason.Path = function() {
+function JasonPath() {
     this.functions = [];
-    this.tracking = [];
-};
-jason.Path.prototype = {
+    this.trackedObjectStore = new this.TrackedObjectStore();
+}
+JasonPath.prototype = {
     execute: function jason_path_execute(object) { //overload?
         var functions = this.functions,
             results = object;
+          /*  collectionized = false;
+        if (!this.isCollection(object)) {
+            results = [object];
+            collectionized = true;
+        }*/
         while (functions.length) {
             results = functions.shift().call(this, results);
         }
         return results;
     },
+    TrackedObjectStore: TrackedObjectStore,
     track: function (obj) {
-        var tracking = this.tracking;
-        if (tracking.indexOf(obj)!=-1) {
-            return true;
-        }
-        this.tracking.push(obj);
-        return false;
+        return this.trackedObjectStore.add(obj);
     },
     untrack: function () {
-        console.log("untracking")
-        this.tracking.length = 0
+        this.trackedObjectStore.clear();
+    },
+    isTracking: function (obj) {
+        return this.trackedObjectStore.isTracking(obj);
     },
     push: function() {
         [].push.apply(this.functions, arguments);
-    },
-    safePush: function () {
-        console.log("safePushing");
-        [].push.apply(this,arguments)
-    },
-    safeConcat: function () {
-         console.log("safeConcatting");
-        [].concat.apply(this,arguments);
     },
     filterObject: function jason_path_filterObject(object, filterFunction, filterCaller) {
             var results = [];
@@ -55,7 +46,7 @@ jason.Path.prototype = {
             return;
         }
         if (track) {
-            if (!this.track(object)) {
+            if (this.track(object)) {
                 for (property in object) {
                     if (object.hasOwnProperty(property)) {
                         eachFunction.call(this,object[property], property, true)
@@ -67,6 +58,31 @@ jason.Path.prototype = {
             for (property in object) {
                 if (object.hasOwnProperty(property)) {
                     eachFunction.call(this, object[property], property, object, false);
+                }
+            }
+        }
+    },
+    deepEach: function (object,eachFunction, track) {
+        var property;
+        if (object === null || object === void 0) {
+            return;
+        }
+        if (track) {
+            if (this.track(object)) {
+                for (property in object) {
+
+                    if (object.hasOwnProperty(property)) {
+                        eachFunction.call(this,object[property], property, true);
+                        this.deepEach(object[property], eachFunction, true);
+                    }
+                }
+            }
+        }
+        else {
+            for (property in object) {
+                if (object.hasOwnProperty(property)) {
+                    eachFunction.call(this, object[property], property, object, false);
+                    this.deepEach(object[property], eachFunction, false);
                 }
             }
         }
@@ -125,7 +141,7 @@ jason.Path.prototype = {
         this.push(function $jason_path_all(object) {
             var results = [];
             this.each(object, function $jason_path_all_filter(value) {    
-                if (this.tracking.indexOf(value) == -1) {
+                if (!this.isTracking(value)) {
                     results.push(value);
                 }
                 if (this.shouldEnumerate(value)) {
@@ -138,20 +154,15 @@ jason.Path.prototype = {
         return this;
     },
     key: function jason_path_key(property) {
-        if (!property) {
-            property = "";
-        }
-
         this.push(function $jason_path_key(object) {
             var results = [];
-            this.each(object, function jason_path_key_filter(value) {
-
+            this.deepEach([object], function jason_path_key_filter(value) {
                 if (this.shouldEnumerate(value)) {
                     if (value.hasOwnProperty(property)) {
                         results.push(value[property]);
                     }
                 }
-            });
+            }, true);
             return results;
         });
         return this;
@@ -159,7 +170,7 @@ jason.Path.prototype = {
     keys: function json_path_keys(keys) { //improve
         this.push(function $json_path_keys(object) {
             var results = [];
-            this.filterObject(object, function json_path_keys_filter(value) {
+            this.deepEach(object, function json_path_keys_filter(value) {
                 if (this.shouldEnumerate(value)) {
                     for (var i = 0; i != keys.length; i++) {
                         if (value.hasOwnProperty(keys[i])) {
@@ -171,7 +182,6 @@ jason.Path.prototype = {
             return results;
         });
         return this;
-
     },
     expression: function jason_path_expression(expression) {
         return this.
@@ -201,18 +211,22 @@ jason.Path.prototype = {
     },
     parent: function json_path_parent() {
         this.push(function $json_path_parent(object) {
-            return this.filterObject(object, function $json_path_property_filter(value, key, context) {
-                return context;
+            var results = [];
+            this.each(object, function $json_path_property_filter(value, key, context) {
+                if (this.tracking.indexOf(value) == -1) {
+                    results.push(context);
+                }
             });
+            return results;
         });
         return this;
     }
 };
 if (!this instanceof Object) {//IE no doubt
-    jason.Path.prototype.isPrimitive = function (value) {
+    JasonPath.prototype.isPrimitive = function (value) {
         return !(this.instanceOf(Object)) && typeof value != "object" && typeof value != "unknown";
     };
-    jason.Path.prototype.isInstanceOf = function (value,type) {//safer instanceof (IE stuff really..)
+    JasonPath.prototype.isInstanceOf = function (value,type) {//safer instanceof (IE stuff really..)
        try {
             return value instanceof type
        }
@@ -226,5 +240,9 @@ if (!this instanceof Object) {//IE no doubt
        }
         return false;
     };
-
 }
+
+
+
+
+
