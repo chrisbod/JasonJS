@@ -10,9 +10,14 @@ function baseModelTest(value, model) {
 		expect("" + model).toEqual("" + value);
 	});
 	it("will return the same valueOf as its value", function() {
-		var valueOf = "valueOf" in value ? value.valueOf() : value;
-		expect(valueOf).toEqual(model.valueOf());
+		expect(+value).toEqual(+model);
 	});
+	it("will be an instance of its value's type", function () {
+		if (value !== null || value!== undefined) {
+			expect(model instanceof value.constructor).toBe(true);
+		}
+
+	})
 
 }
 
