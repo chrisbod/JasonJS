@@ -24,6 +24,7 @@ jason.Path.prototype = {
         return false;
     },
     untrack: function () {
+        console.log("untracking")
         this.tracking.length = 0
     },
     push: function() {
@@ -61,7 +62,6 @@ jason.Path.prototype = {
                     }
                 }
             }
-            this.untrack();
         }
         else {
             for (property in object) {
@@ -125,7 +125,9 @@ jason.Path.prototype = {
         this.push(function $jason_path_all(object) {
             var results = [];
             this.each(object, function $jason_path_all_filter(value) {    
-            results.push(value);         
+                if (this.tracking.indexOf(value) == -1) {
+                    results.push(value);
+                }
                 if (this.shouldEnumerate(value)) {
                     this.each(value, $jason_path_all_filter, true);
                 }

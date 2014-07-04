@@ -26,7 +26,7 @@ describe("Path object tests", function () {
 			boolean: bool || true,
 			string: str || "some level "+level+" string",
 			object: obj || object("level"+level+"object"),
-			array: arr || array([0,1,2,""+level]),
+			array: arr || array([0,1,2,3,4,""+level]),
 			collection: coll ||[]
 		}
 	}
@@ -36,6 +36,7 @@ describe("Path object tests", function () {
 	obj4 = nested(3),
 	obj5 = nested(3),
 	obj6 = nested(4)
+	obj6.foo = obj6.array; //adding duplicate
 	obj1.collection = [
 		obj2,
 		obj3
@@ -46,7 +47,7 @@ describe("Path object tests", function () {
 	]
 	obj1.collection[0].collection[0] = obj6;
 
-
+	obj6.obj6 = obj6;
 	beforeEach(function () {
 		testData = {
 			number: 1,
@@ -105,8 +106,7 @@ describe("Path object tests", function () {
 	//all,key,keys,expression,function,property,parent
 	it("the all method should return all the values in the test data" , function () {
 		var all = jason().all().execute(obj6);
-		console.log(all)
-			expect(all.length).toEqual(11); //6 properties 1 empty array, 1 array with 4 items
+			expect(all.length).toEqual(13); //6 properties 1 empty array, 1 array with 4 items
 	});
 	it("the key method should return any item with a given key", function () {
 		
