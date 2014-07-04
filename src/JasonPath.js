@@ -28,6 +28,7 @@ JasonPath.prototype = {
     },
     push: function() {
         [].push.apply(this.functions, arguments);
+        return this;
     },
     filterObject: function jason_path_filterObject(object, filterFunction, filterCaller) {
             var results = [];
@@ -170,57 +171,52 @@ JasonPath.prototype = {
         );
         return this;
     },
-    key: function jason_path_key(property) {
-        this.push(function $jason_path_key(object) {
-            var results = [];
-            this.deepEach([object], function jason_path_key_filter(value) {
-                if (this.shouldEnumerate(value)) {
-                    if (value.hasOwnProperty(property)) {
-                        results.push(value[property]);
-                    }
-                }
-            }, true);
-            return results;
-        });
-        return this;
-    },
-    keys: function json_path_keys(keys) { //improve
-        this.push(function $json_path_keys(object) {
-            var results = [];
-            this.deepEach(object, function json_path_keys_filter(value) {
-                if (this.shouldEnumerate(value)) {
-                    for (var i = 0; i != keys.length; i++) {
-                        if (value.hasOwnProperty(keys[i])) {
-                            results.push(value[keys[i]]);
-                        }
-                    }
-                }
+    key: function (properties) {
+        if (arguments.length>1) {
+            properties = Array.apply(null,arguments);//multiple arguments must (currently) all be strings
+        } 
+        switch (properties.constructor) {
+            case String:  return this.push(function (object) {
+                return this.deepFilter(object,function (value,key) {
+                    return key == properties;
+                });
+            }); 
+            case Array: return this.push(function (object) {
+                return this.deepFilter(object, function (value,key) {
+                    return properties.indexOf(key) != -1;
+                })
             });
-            return results;
-        });
+            case RegExp: return this.push(function (object) {
+                return this.deepFilter(object, function (value,key) {
+                    return properties.test(key);
+                });
+            });
+            case Function: return this.push(function () {
+                    return this.deepFilter(object,properties);
+                });
+            default: {//try and resolve what we've been given
+                if (!(properties instanceof Array) && this.isCollection(properties)) {
+                    return this.key(Array.apply(null,properties));
+                }
+                return this.key(properties.valueOf());
+            }
+        }
         return this;
     },
     expression: function jason_path_expression(expression) {
-        return this.
-
-        function(new Function("value", "return " + expression));
+        return this.function(new Function("value", "return " + expression));
     },
     function: function jason_path_function(func) {
         this.push(function $json_path_function(object) {
-            return this.filterObject(object, function $json_path_expression_filter(value) {
-                var result;
-                try {
-                    return !!func(value);
-                } catch (e) {
-                    return false;
-                }
+            return this.deepFilter(object, function $json_path_expression_filter(value) {
+                return func(value);
             });
         });
         return this;
     },
     property: function json_path_property(property) {
         this.push(function $json_path_property(object) {
-            return this.filterObject(object, function $json_path_property_filter(value) {
+            return this.deepFilter(object, function $json_path_property_filter(value) {
                 return property in value;
             });
         });

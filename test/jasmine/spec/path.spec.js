@@ -118,8 +118,10 @@ describe("Path object tests", function () {
 	it("the key method should return any item with a given key", function () {
 		var keys = jason().key("string").execute(testData);
 		expect(keys.length).toBe(6);
+		keys = jason().key("id","string").execute(testData);
+		expect(keys.length).toBe(11)
 
-	})
+	});
 	it("should get the parent objects of any passed objects", function () {
 		//var all = jason().all().execute(ob6)
 	})
