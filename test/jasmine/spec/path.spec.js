@@ -62,14 +62,56 @@ describe("Path object tests", function () {
 	});
 
 
+	it("detects primitives correctly", function () {
+		var path = jason();
+		expect(path.isPrimitive({})).toBe(false);
+		expect(path.isPrimitive([])).toBe(false);
+		expect(path.isPrimitive(null)).toBe(true);
+		expect(path.isPrimitive(void 0)).toBe(true);
+		expect(path.isPrimitive(1)).toBe(true);
+		expect(path.isPrimitive(2)).toBe(true);
+		expect(path.isPrimitive(new Number(0))).toBe(false);
+		expect(path.isPrimitive(new Boolean(true))).toBe(false);
+
+	});
+	it("detects literal objects correctly", function () {
+		
+
+
+		var path = jason();
+		expect(path.isNative(1)).toBe(true);
+		expect(path.isNative("foo")).toBe(true);
+		expect(path.isNative(null)).toBe(true);
+		expect(path.isNative(void 0)).toBe(true);
+		expect(path.isNative({moo:1})).toBe(true);
+		expect(path.isNative([1])).toBe(true);
+		expect(path.isNative(function Zoo(){})).toBe(true)
+
+		function Arr() {}
+		Arr.prototype = [];
+
+		function Obj() {}
+
+
+		expect(path.isNative(new Arr())).toBe(false);
+		expect(path.isNative(new Obj())).toBe(false);
+
+		function HackedObject() {}
+		HackedObject.prototype.constructor = Object;
+		expect(path.isNative(new HackedObject())).toBe(false);
+		
+	})
+
 	//all,key,keys,expression,function,property,parent
 	it("the all method should return all the values in the test data" , function () {
 		var all = jason().all().execute(obj6);
-			expect(all.length).toEqual(3); //1 objectm 1 empty array, 1 array with 4 items
-			//testData.recurse = testData
-			obj6.dupe = obj6.array
-			console.log(jason().all().execute(obj6))
+		console.log(all)
+			expect(all.length).toEqual(11); //6 properties 1 empty array, 1 array with 4 items
 	});
+	it("the key method should return any item with a given key", function () {
+		
+
+	})
 	
 
 	
