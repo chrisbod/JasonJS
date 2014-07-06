@@ -89,9 +89,16 @@ JasonPath.prototype = {
         function(new Function("object", "key", "context", "return " + expression));
     },
     property: function json_path_property(propertyName) {
+        var args = arguments;
         return this.add(function $json_path_property(object) {
             return this.iterate(object, function $json_path_property_filter(value) {
                 if (value !== null && typeof value == "object" && propertyName in value) {
+                    if (args.length == 2) {
+                        if (typeof args[1] == "function") {
+                            return args[1](value[propertyName]);
+                        }
+                        return value[propertyName] === args[1];
+                    }
                     return true;
                 }
 

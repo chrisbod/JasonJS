@@ -142,6 +142,44 @@ describe("Path object tests", function() {
         expect(jason().property("foo").execute(test).length).toBe(4);
 
 
+    });
+    it("can return objects with specified properties equal to a specified value", function() {
+        var test = [{
+            foo: true
+        }, {
+            foo: []
+        }, {
+            child: {
+                foo: {}
+            }
+        }, {
+            nofoo: true,
+            anotherFoo: {
+                foo: true
+            }
+
+        }];
+        expect(jason().property("foo", true).execute(test).length).toBe(2);
+    })
+    it("can return objects with specified properties that satisfy a function", function() {
+        var test = [{
+            foo: true
+        }, {
+            foo: []
+        }, {
+            child: {
+                foo: {}
+            }
+        }, {
+            nofoo: true,
+            anotherFoo: {
+                foo: true
+            }
+
+        }];
+        expect(jason().property("foo", function(value) {
+            return value === true;
+        }).execute(test).length).toBe(2);
     })
 
 
