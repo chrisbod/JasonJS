@@ -4,12 +4,16 @@ function TrackedObjectStore() {
 TrackedObjectStore.prototype = {
     constructor: TrackedObjectStore,
     lookup: null,
-    getLookUpName: function (object) {
-        return (object.constructor || Object).toString()
+    getLookUpName: function(object) {
+        if (typeof object == "object" && object !== null) {
+            return (object.constructor || Object).toString()
+        } else {
+            return "" + object;
+        }
     },
-    add: function (object) {
+    add: function(object) {
         var propertyName = this.getLookUpName(object)
-            trackedObjects = this.lookup[propertyName];
+        trackedObjects = this.lookup[propertyName];
         if (!trackedObjects) {
             trackedObjects = this.lookup[propertyName] = [];
             trackedObjects.push(object);
@@ -23,14 +27,14 @@ TrackedObjectStore.prototype = {
             }
         }
     },
-    clear: function () {
+    clear: function() {
         this.lookup = {};
         this.lookup[this.getLookUpName([])] = [];
         this.lookup[this.getLookUpName({})] = [];
     },
-    isTracking: function (object) {
+    isTracking: function(object) {
         var objects = this.lookup[this.getLookUpName(object)];
-        return  objects && objects.indexOf(object) != -1;
+        return objects && objects.indexOf(object) != -1;
     }
 
 }

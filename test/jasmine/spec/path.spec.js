@@ -76,7 +76,7 @@ describe("Path object tests", function() {
         var simples = jason().all().execute(simple);
         expect(simples + "").toEqual(simple + "")
         var all = jason().all().execute(obj6);
-        expect(all.length).toEqual(21); //1 obj, 7 properties 1 empty array, 1 array with 4 items
+        expect(all.length).toEqual(14); //1 obj, 7 properties 1 empty array, 1 array with 4 items
     });
     it("the key method should return any item with a given key", function() {
         var keys = jason().key("string").execute(testData);
@@ -119,10 +119,31 @@ describe("Path object tests", function() {
         expect(keys.toString()).toEqual(first.toString());
         // console.log(keys.slice(0, 3))
     });
-    it("the all method should suppport a specified number of levels", function() {
+    it("the all method should support a specified number of levels", function() {
         var test = ["a", "b", "c", 3, 4, [5, 6, [7, 8]]];
         // console.log(jason().all(1).execute(test));
+    });
+    it("can return objects with specified properties", function() {
+        var test = [{
+            foo: true
+        }, {
+            foo: []
+        }, {
+            child: {
+                foo: {}
+            }
+        }, {
+            nofoo: true,
+            anotherFoo: {
+                foo: true
+            }
+
+        }];
+        expect(jason().property("foo").execute(test).length).toBe(4);
+
+
     })
+
 
 
 

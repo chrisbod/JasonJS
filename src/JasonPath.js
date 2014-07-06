@@ -91,8 +91,10 @@ JasonPath.prototype = {
     property: function json_path_property(propertyName) {
         return this.add(function $json_path_property(object) {
             return this.iterate(object, function $json_path_property_filter(value) {
-                var type = typeof value[propertyName];
-                return type != "null" && type != "undefined" && type != "function";
+                if (value !== null && typeof value == "object" && propertyName in value) {
+                    return true;
+                }
+
             });
         });
     },

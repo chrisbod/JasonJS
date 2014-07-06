@@ -75,10 +75,36 @@ describe("Iterator object tests", function() {
         coll[1] = "ection";
 
         expect(iterator.iterate(fakeLiteral)).toEqual([1, 2, 2]);
-        console.log(iterator.iterate(coll))
+        expect(iterator.iterate(coll)).toEqual(["coll", "ection"])
         //console.log(iterator.iterate(document.documentElement.childNodes))
-    })
+    });
+    it("will ignore repeated values (objects)", function() {
+        var foo = {
+            a: 1,
+            b: [1, 2, 3]
+        }
+        foo.c = foo.b
+        expect(iterator.iterate(foo)).toEqual([1, [1, 2, 3], 1, 2, 3]);
 
+    });
+    it("should handle recursion", function() {
+        console.log(iterator.iterate(document.createElement("div"), function(value) {
+            return value !== null && typeof value == "object" && value != document && value != window;
+        }))
+    })
+    it("should know if something is environmental", function() {
+        function Foo() {}
+        var f = new Foo();
+        expect(iterator.isEnvironmental(document)).toBe(true);
+        expect(iterator.isEnvironmental(window)).toBe(true);
+        expect(iterator.isEnvironmental(null)).toBe(false);
+        expect(iterator.isEnvironmental(new Number())).toBe(false);
+        expect(iterator.isEnvironmental({})).toBe(false);
+        expect(iterator.isEnvironmental(f)).toBe(false);
+    });
+    it("should not iterate environmental objects by default", function() {
+        console.log(iterator.iterate(document))
+    })
 
 
 
