@@ -54,11 +54,11 @@ JasonPath.prototype = {
             return this.iterate(object, handler);
         });
     },
-    function: function jason_path_function(func, recursion) {
+    function: function jason_path_function(func, recursionFunction) {
         return this.add(function $json_path_function(object) {
             return this.iterate(object, function $json_path_expression_filter(value, key, context) {
                 return func(value, key, context);
-            }, recursion);
+            }, recursionFunction);
         });
     },
     item: function() { //optimize?
@@ -105,9 +105,7 @@ JasonPath.prototype = {
             });
         });
     },
-    parent: function json_path_parent() {
-        return this.add(function $json_path_parent(object) {});
-    },
+
     applyTemplate: function() {
         var args = arguments;
         return this.add(function(object) {
@@ -118,43 +116,3 @@ JasonPath.prototype = {
 ["slice", "splice", "concat", "sort", "reverse"].forEach(function(value) {
     JasonPath.prototype[value] = new Function(JasonPath.prototype.applyTemplate.toString().replace(/(^function\s*\(\s*\)\s*\{)|(\}$)/mg, "").replace(/\$0/g, value))
 })
-// "splice", "concat", "sort", "indexOf", "lastIndexOf", "push", "pop", "shift", "unshift", "reverse", "some", "filter"
-
-
-/*
-    foo(..fu)
-    
-    jason().key("foo").query(jason().key("fu"))
-
-    foo(.fu)
-    jason().key("foo").query(jason().property("fu"))
-
-    foos.
-    {},[],{],(),$,#,/,!,0,_
-    object,array,collection,string,number,regexp,boolean,null,undefined
-
-
-    ..book(.appendix)
-    get all books with an appendix property (that is not a function, null or undefined)
-    ..book(..appendix)
-    get all books with any subelements with an appendix property (that is not null or undefined)
-    ..book[3]
-    get the book at index 3
-    ..book[1,2,3]
-    get 2nd,3rd,4th books you find
-
-    ..book{{},[]}
-    get all books that are objects or arrays(but not collections)
-
-    ..book(){value.name == "The Bible"}
-    get all books that have their property name equals The Bible
-    ..book(){key=="book"}
-    get all books who are books (the key property is always the selector)
-    ..[book,pamphlet]() {value.pages<20}
-    get all books and pamphlets with less than 20 pages
-    ..[book(){'foo' in context}]
-    get all books whose parent object (at their first match) has the property 'foo'
-    ..[book,pamplet,magazine]() {key == "magazine" ? object.pages > 100 : key == "book" ? object.pages > 500 : key == "pamphlet" && object.pages > 100 }
-    get all 'large' books,pamplets and magazines
-
-    */
