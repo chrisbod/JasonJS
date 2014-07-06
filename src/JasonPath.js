@@ -1,7 +1,6 @@
 function JasonPath() {
     this.functions = [];
     this.iterator = new JasonIterator();
-    this.trackedObjectStore = new this.TrackedObjectStore();
 }
 JasonPath.prototype = {
     execute: function jason_path_execute(object) { //overload?
@@ -12,61 +11,18 @@ JasonPath.prototype = {
         }
         return results;
     },
-    utilities: new JasonUtilities(),
-    TrackedObjectStore: TrackedObjectStore,
-    track: function(obj) {
-        return this.trackedObjectStore.add(obj);
-    },
-    untrack: function() {
-        this.trackedObjectStore.clear();
-    },
-    isTracking: function(obj) {
-        return this.trackedObjectStore.isTracking(obj);
-    },
     add: function() {
         [].push.apply(this.functions, arguments);
         return this;
     },
-    shouldEnumerate: function(value) {
-        return this.utilities.isNormallyEnumerable(value);
-    },
     iterate: function(object, eachFunction, deep, shouldAbort) {
-        var results = [],
-            nextObject,
-            push = results.push;
-        if (!deep) {
-            deep = this.false;
-        }
-        if (!shouldAbort) {
-            shouldAbort = this.false;
-        }
-        if (this.shouldContinue(object)) {
-            for (property in object) {
-                if (object.hasOwnProperty(property)) {
-                    nextObject = object[property];
-                    if (shouldAbort(nextObject, property, object, results)) {
-                        break;
-                    }
-                    if (eachFunction.call(this, nextObject, property, object)) {
-                        results.push(nextObject);
-                    }
-                    if (deep(nextObject, property, object)) {
-                        push.apply(results, this.iterate(nextObject, eachFunction, deep, shouldAbort));
-                    }
-                }
-            }
-            this.untrack();
-        }
-        return results;
+        return this.iterator.iterate(object, eachFunction, deep, shouldAbort);
     },
     true: function() {
         return true;
     },
     false: function() {
         return false;
-    },
-    shouldContinue: function(object) {
-        return this.shouldEnumerate(object) && this.track(object);
     },
     key: function(properties) {
         var handler;
