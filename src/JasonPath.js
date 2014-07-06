@@ -1,5 +1,6 @@
 function JasonPath() {
     this.functions = [];
+    this.iterator = new JasonIterator();
     this.trackedObjectStore = new this.TrackedObjectStore();
 }
 JasonPath.prototype = {
