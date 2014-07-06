@@ -21,37 +21,44 @@ JasonIterator.prototype = {
     },
     run: function(results, object, eachFunction, shouldRecurse, shouldAbort) {
         var nextObject,
+            property,
             recurse = shouldRecurse();
-        if (this.shouldContinue(object)) {
-            for (property in object) {
-                if (!shouldAbort(results, object) && object.hasOwnProperty(property)) {
-                    nextObject = object[property];
-                    if (eachFunction.call(this, nextObject, property, object)) {
-                        results[results.length] = nextObject;
-                    }
-                    if (recurse) {
-                        this.run(results, nextObject, eachFunction, shouldRecurse, shouldAbort);
-                    }
+        for (property in this.getEnumerableObject(object)) {
+            if (!shouldAbort(results, object) && object.hasOwnProperty(property)) {
+                nextObject = object[property];
+                if (eachFunction.call(this, nextObject, property, object)) {
+                    results[results.length] = nextObject;
+                }
+                if (recurse) {
+                    this.run(results, nextObject, eachFunction, shouldRecurse, shouldAbort);
                 }
             }
-
         }
         this.untrack();
     },
     runFast: function(results, object, eachFunction) {
-        var nextObject;
-        if (this.shouldContinue(object)) {
-            for (property in object) {
-                if (object.hasOwnProperty(property)) {
-                    nextObject = object[property];
-                    if (eachFunction.call(this, nextObject, property, object)) {
-                        results[results.length] = nextObject;
-                    }
-                    this.runFast(results, nextObject, eachFunction);
+        var nextObject,
+            property;
+        for (property in this.getEnumerableObject(object)) {
+            if (object.hasOwnProperty(property)) {
+                nextObject = object[property];
+                if (eachFunction.call(this, nextObject, property, object)) {
+                    results[results.length] = nextObject;
                 }
+                this.runFast(results, nextObject, eachFunction);
             }
         }
         this.untrack();
+    },
+    getEnumerableObject: function(object) {
+        if (typeof object == "object") {
+            if (object === null || object instanceof Number || object instanceof Boolean || object instanceof String || object instanceof RegExp) return;
+            this.track(object);
+            if (typeof object.length == "number" && object.constructor != Object && !(object instanceof Array)) {
+                return Array.apply(null, object);
+            }
+            return object;
+        }
     },
     TRUE: function() {
         return true;
@@ -60,23 +67,13 @@ JasonIterator.prototype = {
         return false
     },
     shouldContinue: function(object) {
-        return this.shouldEnumerate(object) && this.track(object);
+        return this.shouldEnumerate(object)
     },
     track: function(obj) {
         return this.trackedObjectStore.add(obj);
     },
     untrack: function() {
         this.trackedObjectStore.clear();
-    },
-    shouldEnumerate: function(value) {
-        if (typeof value == "object") {
-            if (value === null) return false;
-            if (value instanceof Number) return false;
-            if (value instanceof Boolean) return false;
-            if (value instanceof String) return false;
-            return true;
-        }
-        return false;
     },
     depth: function(depth) {
         var current = 0;

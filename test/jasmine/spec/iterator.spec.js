@@ -60,6 +60,23 @@ describe("Iterator object tests", function() {
             return true
         }, 1)).toEqual(arr);
         expect(iterator.iterate(obj, null, 4, 2)).toEqual([1, 2])
+    });
+    it("given a 'fake' collection it should only enumerate indices unless it is an object literal", function() {
+        var fakeLiteral = {
+            0: 1,
+            1: 2,
+            length: 2,
+        };
+
+        function Collection() {}
+        var coll = new Collection()
+        coll.length = 2
+        coll[0] = "coll";
+        coll[1] = "ection";
+
+        expect(iterator.iterate(fakeLiteral)).toEqual([1, 2, 2]);
+        console.log(iterator.iterate(coll))
+        //console.log(iterator.iterate(document.documentElement.childNodes))
     })
 
 
