@@ -44,7 +44,7 @@ JasonPath.prototype = {
                 break;
             default:
                 { //try and resolve what we've been given
-                    if (!(properties instanceof Array) && this.isCollection(properties)) {
+                    if (!(properties instanceof Array) && typeof properties.length instanceof Number) {
                         return this.key(Array.apply(null, properties));
                     }
                     return this.key(properties.valueOf());
@@ -54,11 +54,11 @@ JasonPath.prototype = {
             return this.iterate(object, handler);
         });
     },
-    function: function jason_path_function(func) {
+    function: function jason_path_function(func, recursion) {
         return this.add(function $json_path_function(object) {
             return this.iterate(object, function $json_path_expression_filter(value, key, context) {
                 return func(value, key, context);
-            });
+            }, recursion);
         });
     },
     item: function() { //optimize?
@@ -76,12 +76,12 @@ JasonPath.prototype = {
             return results;
         })
     },
-    all: function() {
+    all: function(level) {
         return this.
 
         function(function() {
             return true
-        });
+        }, level);
     },
     expression: function jason_path_expression(expression) {
         return this.

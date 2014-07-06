@@ -3,27 +3,55 @@ function JasonIterator() {
 }
 JasonIterator.prototype = {
     TrackedObjectStore: TrackedObjectStore,
-    iterate: function(object, eachFunction, shallow) {
-        var results = [],
-            nextObject,
-            push = results.push,
-            deep = shallow === true ? this.FALSE : this.TRUE;
-        eachFunction = eachFunction || this.TRUE;
+    iterate: function(object, eachFunction, shouldRecurse, shouldAbort) {
+        var results = [];
+        if (shouldRecurse === void 0 && shouldAbort === void 0) {
+            this.runFast(results, object, eachFunction || this.TRUE);
+        } else {
+            this.run(
+                results,
+                object,
+                eachFunction || this.TRUE,
+                typeof shouldRecurse == "number" ? this.depth(shouldRecurse) : shouldRecurse || this.TRUE,
+                typeof shouldAbort == "number" ? this.count(shouldAbort) : shouldAbort || this.FALSE
+            );
+        }
+
+        return results;
+    },
+    run: function(results, object, eachFunction, shouldRecurse, shouldAbort) {
+        var nextObject,
+            recurse = shouldRecurse();
+        if (this.shouldContinue(object)) {
+            for (property in object) {
+                if (!shouldAbort(results, object) && object.hasOwnProperty(property)) {
+                    nextObject = object[property];
+                    if (eachFunction.call(this, nextObject, property, object)) {
+                        results[results.length] = nextObject;
+                    }
+                    if (recurse) {
+                        this.run(results, nextObject, eachFunction, shouldRecurse, shouldAbort);
+                    }
+                }
+            }
+
+        }
+        this.untrack();
+    },
+    runFast: function(results, object, eachFunction) {
+        var nextObject;
         if (this.shouldContinue(object)) {
             for (property in object) {
                 if (object.hasOwnProperty(property)) {
                     nextObject = object[property];
                     if (eachFunction.call(this, nextObject, property, object)) {
-                        results.push(nextObject);
+                        results[results.length] = nextObject;
                     }
-                    if (deep(nextObject, property, object)) {
-                        push.apply(results, this.iterate(nextObject, eachFunction, deep));
-                    }
+                    this.runFast(results, nextObject, eachFunction);
                 }
             }
-            this.untrack();
         }
-        return results;
+        this.untrack();
     },
     TRUE: function() {
         return true;
@@ -49,6 +77,17 @@ JasonIterator.prototype = {
             return true;
         }
         return false;
+    },
+    depth: function(depth) {
+        var current = 0;
+        return function() {
+            return ++current < depth;
+        }
+    },
+    count: function(count) {
+        return function(results) {
+            return results.length >= count;
+        }
     }
 }
 
