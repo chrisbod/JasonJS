@@ -128,8 +128,42 @@ describe("Path object tests", function() {
     });
     it("the item method should return only the specified indices", function() {
         var keys = jason().key("id", "string").item(2, 0).execute(testData)
-        expect(keys[1]).toBe("some level 1 string")
-    })
+        expect(keys[0]).toBe("some level 1 string")
+    });
+    it("the slice method works", function() {
+        var keys = jason().key("id", "string").slice(0, 3).execute(testData);
+        expect(keys.toString()).toEqual(["a string", "ID0", "some level 1 string"].toString());
+        // console.log(keys.slice(0, 3))
+
+    });
+    it("the splice method works", function() {
+        var first = jason().key("id", "string").execute(testData).slice(0, 3),
+            keys = jason().key("id", "string").splice(0, 3).execute(testData);
+        expect(keys.toString()).toEqual(first.toString());
+        // console.log(keys.slice(0, 3))
+    });
+    it("the concat method works", function() {
+        var first = jason().key("id", "string").execute(testData).concat(0, 3, [4]),
+            keys = jason().key("id", "string").concat(0, 3, [4]).execute(testData);
+        expect(keys.toString()).toEqual(first.toString());
+        // console.log(keys.slice(0, 3))
+    });
+    it("the sort method works", function() {
+        var first = jason().key("id", "string").execute(testData).sort(),
+            keys = jason().key("id", "string").sort().execute(testData);
+        expect(keys.toString()).toEqual(first.toString());
+        // console.log(keys.slice(0, 3))
+    });
+    it("the reverse method works", function() {
+        var first = jason().key("id", "string").execute(testData).reverse(),
+            keys = jason().key("id", "string").reverse().execute(testData);
+        expect(keys.toString()).toEqual(first.toString());
+        // console.log(keys.slice(0, 3))
+    });
+    /* it("the ll method should go a specified number of levels", function() {
+        var test = ["a", "b", "c", 3, 4, [5, 6, [7, 8]]];
+        console.log(jason().all(1).execute(test));
+    })*/
 
 
 

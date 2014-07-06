@@ -29,7 +29,7 @@ JasonPath.prototype = {
     shouldEnumerate: function(value) {
         return this.utilities.isNormallyEnumerable(value);
     },
-    filter: function(object, eachFunction, deep, shouldAbort) {
+    iterate: function(object, eachFunction, deep, shouldAbort) {
         var results = [],
             nextObject,
             push = results.push;
@@ -50,7 +50,7 @@ JasonPath.prototype = {
                         results.push(nextObject);
                     }
                     if (deep(nextObject, property, object)) {
-                        push.apply(results, this.filter(nextObject, eachFunction, deep, shouldAbort));
+                        push.apply(results, this.iterate(nextObject, eachFunction, deep, shouldAbort));
                     }
                 }
             }
@@ -66,12 +66,6 @@ JasonPath.prototype = {
     },
     shouldContinue: function(object) {
         return this.shouldEnumerate(object) && this.track(object);
-    },
-    deepFilter: function(object, eachFunction) {
-        return this.filter(object, eachFunction, this.true);
-    },
-    shallowFilter: function(object, eachFunction) {
-        return this.filter(object, eachFunction);
     },
     key: function(properties) {
         var handler;
@@ -106,30 +100,30 @@ JasonPath.prototype = {
                 }
         }
         return this.add(function(object) {
-            return this.deepFilter(object, handler);
+            return this.iterate(object, handler, this.true);
         });
     },
     function: function jason_path_function(func) {
-        this.add(function $json_path_function(object) {
-            return this.deepFilter(object, function $json_path_expression_filter(value, key, context) {
+        return this.add(function $json_path_function(object) {
+            return this.iterate(object, function $json_path_expression_filter(value, key, context) {
                 return func(value, key, context);
-            });
+            }, this.true);
         });
-        return this;
     },
-    item: function() { //very inefficient
+    item: function() { //optimize?
         var keys = [];
         [].forEach.call(arguments, function(value) {
             keys[keys.length] = "" + value;
-        })
-        keys.sort();
-        return this.
-
-        function(function(object, key, context) {
-            return keys.indexOf(key) != -1;
         });
-        return this;
-
+        return this.add(function(object) {
+            var results = [];
+            keys.forEach(function(value) {
+                if (value in object) {
+                    results.push(object[value]);
+                }
+            })
+            return results;
+        })
     },
     all: function() {
         return this.
@@ -142,19 +136,28 @@ JasonPath.prototype = {
         function(new Function("object", "key", "context", "return " + expression));
     },
     property: function json_path_property(propertyName) {
-        this.add(function $json_path_property(object) {
-            return this.deepFilter(object, function $json_path_property_filter(value) {
+        return this.add(function $json_path_property(object) {
+            return this.iterate(object, function $json_path_property_filter(value) {
                 var type = typeof value[propertyName];
                 return type != "null" && type != "undefined" && type != "function";
-            });
+            }, this.true);
         });
-        return this;
     },
     parent: function json_path_parent() {
-        this.add(function $json_path_parent(object) {});
-        return this;
+        return this.add(function $json_path_parent(object) {});
+    },
+    applyTemplate: function() {
+        var args = arguments;
+        return this.add(function(object) {
+            return [].$0.apply(object, args);
+        });
     }
 };
+["slice", "splice", "concat", "sort", "reverse"].forEach(function(value) {
+    JasonPath.prototype[value] = new Function(JasonPath.prototype.applyTemplate.toString().replace(/(^function\s*\(\s*\)\s*\{)|(\}$)/mg, "").replace(/\$0/g, value))
+})
+// "splice", "concat", "sort", "indexOf", "lastIndexOf", "push", "pop", "shift", "unshift", "reverse", "some", "filter"
+
 
 /*
     foo(..fu)
