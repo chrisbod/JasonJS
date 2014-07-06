@@ -15,14 +15,8 @@ JasonPath.prototype = {
         [].push.apply(this.functions, arguments);
         return this;
     },
-    iterate: function(object, eachFunction, deep, shouldAbort) {
-        return this.iterator.iterate(object, eachFunction, deep, shouldAbort);
-    },
-    true: function() {
-        return true;
-    },
-    false: function() {
-        return false;
+    iterate: function(object, eachFunction, shallow) {
+        return this.iterator.iterate(object, eachFunction, shallow);
     },
     key: function(properties) {
         var handler;
@@ -57,14 +51,14 @@ JasonPath.prototype = {
                 }
         }
         return this.add(function(object) {
-            return this.iterate(object, handler, this.true);
+            return this.iterate(object, handler);
         });
     },
     function: function jason_path_function(func) {
         return this.add(function $json_path_function(object) {
             return this.iterate(object, function $json_path_expression_filter(value, key, context) {
                 return func(value, key, context);
-            }, this.true);
+            });
         });
     },
     item: function() { //optimize?
@@ -85,7 +79,9 @@ JasonPath.prototype = {
     all: function() {
         return this.
 
-        function(this.true);
+        function(function() {
+            return true
+        });
     },
     expression: function jason_path_expression(expression) {
         return this.
@@ -97,7 +93,7 @@ JasonPath.prototype = {
             return this.iterate(object, function $json_path_property_filter(value) {
                 var type = typeof value[propertyName];
                 return type != "null" && type != "undefined" && type != "function";
-            }, this.true);
+            });
         });
     },
     parent: function json_path_parent() {

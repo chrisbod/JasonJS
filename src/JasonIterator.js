@@ -2,36 +2,31 @@ function JasonIterator() {
     this.trackedObjectStore = new this.TrackedObjectStore();
 }
 JasonIterator.prototype = {
-    utilities: new JasonUtilities(),
     TrackedObjectStore: TrackedObjectStore,
-    iterate: function(object, eachFunction, deep, shouldAbort) {
+    iterate: function(object, eachFunction, shallow) {
         var results = [],
             nextObject,
-            push = results.push;
-        if (!deep) {
-            deep = this.FALSE;
-        }
-        if (!shouldAbort) {
-            shouldAbort = this.FALSE;
-        }
+            push = results.push,
+            deep = shallow === true ? this.FALSE : this.TRUE;
+        eachFunction = eachFunction || this.TRUE;
         if (this.shouldContinue(object)) {
             for (property in object) {
                 if (object.hasOwnProperty(property)) {
                     nextObject = object[property];
-                    if (shouldAbort(nextObject, property, object, results)) {
-                        break;
-                    }
                     if (eachFunction.call(this, nextObject, property, object)) {
                         results.push(nextObject);
                     }
                     if (deep(nextObject, property, object)) {
-                        push.apply(results, this.iterate(nextObject, eachFunction, deep, shouldAbort));
+                        push.apply(results, this.iterate(nextObject, eachFunction, deep));
                     }
                 }
             }
             this.untrack();
         }
         return results;
+    },
+    TRUE: function() {
+        return true;
     },
     FALSE: function() {
         return false
@@ -46,7 +41,14 @@ JasonIterator.prototype = {
         this.trackedObjectStore.clear();
     },
     shouldEnumerate: function(value) {
-        return this.utilities.isNormallyEnumerable(value);
+        if (typeof value == "object") {
+            if (value === null) return false;
+            if (value instanceof Number) return false;
+            if (value instanceof Boolean) return false;
+            if (value instanceof String) return false;
+            return true;
+        }
+        return false;
     }
 }
 
